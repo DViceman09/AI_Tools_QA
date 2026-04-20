@@ -5,6 +5,7 @@
 .deps/
 __pycache__/
 *.pyc
+API_KEY
 data/*.db
 generated_tests/
 artifacts/

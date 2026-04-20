@@ -10,6 +10,7 @@ __pycache__
 *.pyo
 *.pyd
 .pytest_cache
+API_KEY
 
 data
 generated_tests

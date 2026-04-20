@@ -16,16 +16,18 @@ This repository contains the first executable slice of an AI-assisted bug triage
 ## Quick start
 
 1. Install the dashboard dependencies with `python -m pip install --target .deps .`
-2. Optionally set `OPENAI_API_KEY` to enable real LLM calls
+2. To enable real OpenAI calls, either place your key in a local `API_KEY` file at the repo root or set `OPENAI_API_KEY`
 3. Optionally set `BUG_TRIAGE_AI_MODE` to `openai`, `auto`, or `heuristic`
 4. Run the app with `python run_dashboard.py`
 5. Open `http://127.0.0.1:8000`
 
-`BUG_TRIAGE_AI_MODE=auto` is the default. It uses OpenAI when an API key is present and falls back to heuristics otherwise.
+`BUG_TRIAGE_AI_MODE=auto` is the default. It uses OpenAI when an API key is present in `OPENAI_API_KEY` or the local `API_KEY` file, and falls back to heuristics otherwise.
 
 ## OpenAI configuration
 
 - `OPENAI_API_KEY`: enables live LLM requests
+- `API_KEY`: local repo-root secret file used automatically when `OPENAI_API_KEY` is not set
+- `OPENAI_API_KEY_FILE`: optional override path for the key file
 - `OPENAI_TRIAGE_MODEL`: defaults to `gpt-5-mini`
 - `OPENAI_TESTGEN_MODEL`: defaults to `gpt-5.2`
 - `BUG_TRIAGE_AI_MODE`: `auto`, `openai`, or `heuristic`

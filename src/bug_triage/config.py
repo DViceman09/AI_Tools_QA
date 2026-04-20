@@ -22,6 +22,25 @@ class Settings:
     openai_testgen_model: str = "gpt-5.2"
 
 
+def _resolve_secret_file_path(name: str, default: Path) -> Path:
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+
+    candidate = Path(raw_value).expanduser()
+    if candidate.is_absolute():
+        return candidate
+    return ROOT_DIR / candidate
+
+
+def _read_secret_file(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+
+    raw_value = path.read_text(encoding="utf-8").strip()
+    return raw_value or None
+
+
 def _resolve_storage_defaults() -> tuple[Path, Path, Path]:
     storage_root = os.getenv("BUG_TRIAGE_STORAGE_ROOT")
     if storage_root:
@@ -66,6 +85,18 @@ def _resolve_seed_demo_data() -> bool:
     return True
 
 
+def _resolve_openai_api_key() -> str | None:
+    raw_value = os.getenv("OPENAI_API_KEY")
+    if raw_value is not None and raw_value.strip():
+        return raw_value.strip()
+
+    secret_file_path = _resolve_secret_file_path(
+        "OPENAI_API_KEY_FILE",
+        ROOT_DIR / "API_KEY",
+    )
+    return _read_secret_file(secret_file_path)
+
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     default_database_path, default_generated_tests_dir, default_artifact_storage_dir = (
@@ -83,7 +114,7 @@ def get_settings() -> Settings:
         ),
         seed_demo_data=_resolve_seed_demo_data(),
         ai_mode=os.getenv("BUG_TRIAGE_AI_MODE", "auto"),
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
+        openai_api_key=_resolve_openai_api_key(),
         openai_triage_model=os.getenv("OPENAI_TRIAGE_MODEL", "gpt-5-mini"),
         openai_testgen_model=os.getenv("OPENAI_TESTGEN_MODEL", "gpt-5.2"),
     )
