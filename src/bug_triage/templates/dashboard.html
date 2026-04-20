@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }}</title>
+    <link rel="stylesheet" href="{{ request.url_for('static', path='styles.css') }}">
+</head>
+<body>
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+    <main class="app-shell">
+        <header class="card app-header">
+            <div class="brand-panel">
+                <p class="section-kicker">Game QA Command Center</p>
+                <div class="brand-row">
+                    <div class="brand-mark" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="brand-copy">
+                        <h1>{{ app_name }}</h1>
+                        <p class="lead-copy">
+                            AI-assisted bug triage, regression candidate generation, and intelligent
+                            test design for release teams shipping on mobile, PC, and console.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-status-grid">
+                <article class="status-card">
+                    <span class="status-label">Runtime mode</span>
+                    <strong id="mode-pill">Loading</strong>
+                    <p>Live execution path currently powering triage and test generation.</p>
+                </article>
+                <article class="status-card">
+                    <span class="status-label">Supported scope</span>
+                    <strong id="scope-pill">Mobile / PC / Console</strong>
+                    <p>Prompts, routing, and testcase outputs are tuned for game delivery teams only.</p>
+                </article>
+            </div>
+        </header>
+
+        <section class="overview-grid">
+            <article class="card feature-card">
+                <p class="section-kicker">Operational Focus</p>
+                <h2>One surface for intake, triage, and test design</h2>
+                <p class="muted-copy">
+                    Keep incoming bugs, AI recommendations, regression candidates, and authored QA suites
+                    in a single workspace instead of splitting context across tools.
+                </p>
+                <div class="signal-list">
+                    <div class="signal-item">
+                        <strong>Queue-first</strong>
+                        <span>Review incoming issues quickly, then drill into a single bug without losing the list view.</span>
+                    </div>
+                    <div class="signal-item">
+                        <strong>Human-reviewed AI</strong>
+                        <span>Surface routing, root-cause hints, and testcase suggestions without hiding the evidence.</span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card feature-card">
+                <p class="section-kicker">Workflow Split</p>
+                <h2>Separate triage from deep test design</h2>
+                <p class="muted-copy">
+                    Triage needs speed and decision clarity. Test design needs authored context, artifact review,
+                    and grouped execution suites. The dashboard now treats them as different work modes.
+                </p>
+                <div class="mini-callouts">
+                    <div>
+                        <span class="utility-label">Triage</span>
+                        <p>Prioritize severity, owner, duplicate risk, and regression candidate generation.</p>
+                    </div>
+                    <div>
+                        <span class="utility-label">Test Design Studio</span>
+                        <p>Bring in images, PDFs, and notes to build detailed Smoke, Sanity, Regression, Functional, and Non-functional suites.</p>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card feature-card">
+                <p class="section-kicker">Release Readiness</p>
+                <h2>Metrics and filters stay visible</h2>
+                <p class="muted-copy">
+                    Production QA tools work best when queue health, ownership, and plan coverage are legible at a glance.
+                </p>
+                <ul class="guide-list">
+                    <li>High-level KPIs are pinned above the work area.</li>
+                    <li>Queue filters narrow by severity, platform, and readiness.</li>
+                    <li>Detailed review remains focused on one selected issue at a time.</li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="metrics-grid" id="metrics-grid">
+            <article class="card metric-card">
+                <span>Total bugs</span>
+                <strong id="metric-total">0</strong>
+                <small>Active records across the workspace</small>
+            </article>
+            <article class="card metric-card">
+                <span>Triaged</span>
+                <strong id="metric-triaged">0</strong>
+                <small>Bugs with routing and severity assigned</small>
+            </article>
+            <article class="card metric-card">
+                <span>Generated tests</span>
+                <strong id="metric-tests">0</strong>
+                <small>Candidate regression assets on file</small>
+            </article>
+            <article class="card metric-card">
+                <span>Coverage</span>
+                <strong id="metric-coverage">0%</strong>
+                <small>Triage coverage of current bug intake</small>
+            </article>
+            <article class="card metric-card">
+                <span>Test plans</span>
+                <strong id="metric-test-plans">0</strong>
+                <small>Detailed grouped QA suites generated</small>
+            </article>
+        </section>
+
+        <section class="card workspace-switch">
+            <div class="panel-header">
+                <div>
+                    <p class="section-kicker">Workspace</p>
+                    <h2>Choose the active operating mode</h2>
+                </div>
+            </div>
+            <div class="view-switcher" id="view-switcher">
+                <button class="view-toggle active" data-view="triage" type="button">
+                    <span class="view-toggle-label">Bug Triage</span>
+                    <span class="view-toggle-copy">Review intake, route owners, and generate regression candidates.</span>
+                </button>
+                <button class="view-toggle" data-view="test-design" type="button">
+                    <span class="view-toggle-label">Test Design Studio</span>
+                    <span class="view-toggle-copy">Author intelligent grouped test suites from bug context and supporting artifacts.</span>
+                </button>
+            </div>
+        </section>
+
+        <div id="feedback-banner" class="feedback-banner hidden" aria-live="polite"></div>
+
+        <section class="workspace-grid view-panel" id="triage-view">
+            <aside class="workspace-column">
+                <section class="card composer-card">
+                    <div class="panel-header">
+                        <div>
+                            <p class="section-kicker">Intake</p>
+                            <h2>Create a new game bug</h2>
+                        </div>
+                    </div>
+                    <form id="bug-form" class="stack">
+                        <div class="split">
+                            <label>
+                                <span>Game title</span>
+                                <input type="text" name="game_title" placeholder="Starfall Arena" required>
+                            </label>
+                            <label>
+                                <span>Platform</span>
+                                <select name="platform" required>
+                                    <option value="mobile">Mobile</option>
+                                    <option value="pc">PC</option>
+                                    <option value="console">Console</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="split">
+                            <label>
+                                <span>Engine</span>
+                                <select name="engine">
+                                    <option value="Unity">Unity</option>
+                                    <option value="Unreal">Unreal</option>
+                                    <option value="Custom">Custom</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Build number</span>
+                                <input type="text" name="build_number" placeholder="PS5-1.3.18-cert">
+                            </label>
+                        </div>
+                        <label>
+                            <span>Title</span>
+                            <input type="text" name="title" placeholder="PS5 hard-locks after resume on inventory screen" required>
+                        </label>
+                        <label>
+                            <span>Description</span>
+                            <textarea name="description" rows="6" placeholder="Describe player impact, repro steps, and expected behavior." required></textarea>
+                        </label>
+                        <div class="split">
+                            <label>
+                                <span>Source</span>
+                                <input type="text" name="source" value="manual">
+                            </label>
+                            <label>
+                                <span>External ID</span>
+                                <input type="text" name="external_id" placeholder="Optional">
+                            </label>
+                        </div>
+                        <div class="split">
+                            <label>
+                                <span>Environment</span>
+                                <input type="text" name="environment" placeholder="qa / cert / production">
+                            </label>
+                            <label>
+                                <span>Version</span>
+                                <input type="text" name="version" placeholder="1.3.18">
+                            </label>
+                        </div>
+                        <label>
+                            <span>Stack trace or crash fingerprint</span>
+                            <textarea name="stack_trace" rows="4" placeholder="Optional crash signature, assertion, or telemetry fingerprint"></textarea>
+                        </label>
+                        <button id="create-bug-button" type="submit" class="primary-button">Create bug</button>
+                    </form>
+                </section>
+            </aside>
+
+            <aside class="workspace-column">
+                <section class="card queue-card">
+                    <div class="panel-header queue-header">
+                        <div>
+                            <p class="section-kicker">Queue</p>
+                            <h2>Incoming issues</h2>
+                        </div>
+                        <div class="mini-metric-grid">
+                            <div class="mini-metric">
+                                <span>Visible</span>
+                                <strong id="queue-visible-count">0</strong>
+                            </div>
+                            <div class="mini-metric">
+                                <span>Needs triage</span>
+                                <strong id="queue-needs-triage-count">0</strong>
+                            </div>
+                            <div class="mini-metric">
+                                <span>High risk</span>
+                                <strong id="queue-high-risk-count">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="toolbar-grid">
+                        <label>
+                            <span>Search</span>
+                            <input id="triage-search" type="search" placeholder="Search title, game, component, or summary">
+                        </label>
+                        <div class="split split-toolbar">
+                            <label>
+                                <span>Severity</span>
+                                <select id="triage-severity-filter">
+                                    <option value="all">All severities</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Platform</span>
+                                <select id="triage-platform-filter">
+                                    <option value="all">All platforms</option>
+                                    <option value="mobile">Mobile</option>
+                                    <option value="pc">PC</option>
+                                    <option value="console">Console</option>
+                                </select>
+                            </label>
+                        </div>
+                        <label>
+                            <span>Readiness</span>
+                            <select id="triage-readiness-filter">
+                                <option value="all">All issues</option>
+                                <option value="needs-triage">Needs triage</option>
+                                <option value="triaged">Triaged</option>
+                                <option value="has-tests">Has tests</option>
+                                <option value="needs-tests">Needs tests</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div id="bug-list" class="bug-list"></div>
+                </section>
+            </aside>
+
+            <section class="workspace-column workspace-main">
+                <section class="card review-card">
+                    <div class="review-topbar">
+                        <div>
+                            <p class="section-kicker">Issue review</p>
+                            <h2 id="detail-title">Select a bug</h2>
+                            <p id="detail-context-line" class="muted-copy">
+                                Choose an item from the queue to inspect context, route ownership, and generate artifacts.
+                            </p>
+                        </div>
+                        <div class="detail-actions">
+                            <button id="triage-button" class="secondary-button" disabled>Run triage</button>
+                            <button id="test-button" class="primary-button" disabled>Generate regression test</button>
+                        </div>
+                    </div>
+
+                    <div id="detail-empty" class="empty-state">
+                        Select a bug from the queue to open the full review surface.
+                    </div>
+
+                    <div id="detail-content" class="detail-content hidden">
+                        <section class="review-section summary-section">
+                            <div class="summary-copy">
+                                <div class="badge-row" id="detail-badges"></div>
+                                <p id="detail-description" class="body-copy"></p>
+                            </div>
+                            <div class="meta-grid" id="detail-meta"></div>
+                        </section>
+
+                        <div class="review-grid">
+                            <section class="review-section">
+                                <div class="section-heading">
+                                    <div>
+                                        <h3>Triage recommendation</h3>
+                                        <p>Severity, ownership, duplicate signal, and evidence.</p>
+                                    </div>
+                                </div>
+                                <div id="triage-block" class="triage-block empty-copy">
+                                    No triage recommendation has been generated yet.
+                                </div>
+                            </section>
+
+                            <section class="review-section">
+                                <div class="section-heading">
+                                    <div>
+                                        <h3>Regression candidates</h3>
+                                        <p>Generated test assets aligned to the selected issue.</p>
+                                    </div>
+                                </div>
+                                <div id="tests-block" class="tests-block empty-copy">
+                                    No candidate tests have been generated yet.
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </section>
+
+        <section class="workspace-grid workspace-grid-design view-panel hidden" id="test-design-view">
+            <aside class="workspace-column">
+                <section class="card selected-card">
+                    <div class="panel-header">
+                        <div>
+                            <p class="section-kicker">Selected issue</p>
+                            <h2>Design context</h2>
+                        </div>
+                    </div>
+                    <div id="design-selected-bug" class="selected-bug-card empty-copy">
+                        Select a bug from the library to generate a grouped testcase plan.
+                    </div>
+                </section>
+
+                <section class="card queue-card">
+                    <div class="panel-header queue-header">
+                        <div>
+                            <p class="section-kicker">Bug library</p>
+                            <h2>Available issues</h2>
+                        </div>
+                        <div class="mini-metric-grid">
+                            <div class="mini-metric">
+                                <span>Visible</span>
+                                <strong id="design-visible-count">0</strong>
+                            </div>
+                            <div class="mini-metric">
+                                <span>With plans</span>
+                                <strong id="design-plan-count">0</strong>
+                            </div>
+                            <div class="mini-metric">
+                                <span>Needs plan</span>
+                                <strong id="design-needs-plan-count">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="toolbar-grid">
+                        <label>
+                            <span>Search</span>
+                            <input id="design-search" type="search" placeholder="Search title, game, platform, or summary">
+                        </label>
+                        <div class="split split-toolbar">
+                            <label>
+                                <span>Platform</span>
+                                <select id="design-platform-filter">
+                                    <option value="all">All platforms</option>
+                                    <option value="mobile">Mobile</option>
+                                    <option value="pc">PC</option>
+                                    <option value="console">Console</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Plan state</span>
+                                <select id="design-plan-filter">
+                                    <option value="all">All issues</option>
+                                    <option value="has-plan">Has plan</option>
+                                    <option value="needs-plan">Needs plan</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="design-bug-list" class="bug-list compact-bug-list"></div>
+                </section>
+            </aside>
+
+            <section class="workspace-column">
+                <section class="card composer-card">
+                    <div class="panel-header">
+                        <div>
+                            <p class="section-kicker">Authoring</p>
+                            <h2>Test design inputs</h2>
+                        </div>
+                        <button id="test-plan-button" class="primary-button" disabled>Generate intelligent testcases</button>
+                    </div>
+
+                    <form id="test-plan-form" class="stack">
+                        <label>
+                            <span>Feature or flow under test</span>
+                            <input type="text" name="feature_goal" placeholder="Inventory compare flow on PS5 resume" required>
+                        </label>
+                        <label>
+                            <span>Design notes, risks, and instructions</span>
+                            <textarea name="design_notes" rows="7" placeholder="Paste gameplay intent, acceptance criteria, known risks, or QA notes."></textarea>
+                        </label>
+                        <label>
+                            <span>Focus areas</span>
+                            <input type="text" name="focus_areas" placeholder="platform recovery, progression, matchmaking, performance">
+                        </label>
+                        <label>
+                            <span>Artifacts</span>
+                            <input id="artifact-input" type="file" multiple accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md,.json,.csv">
+                        </label>
+                        <p class="helper-copy">
+                            Attach screenshots, image references, PDF design docs, QA notes, or other supporting material.
+                            Uploaded artifacts are linked to the selected game bug.
+                        </p>
+                    </form>
+                </section>
+
+                <section class="card artifacts-card">
+                    <div class="panel-header">
+                        <div>
+                            <p class="section-kicker">Artifacts</p>
+                            <h2>Attached references</h2>
+                        </div>
+                    </div>
+                    <div id="artifact-list" class="artifact-list empty-copy">
+                        No supporting artifacts attached yet.
+                    </div>
+                </section>
+            </section>
+
+            <section class="workspace-column workspace-main">
+                <section class="card plan-card">
+                    <div class="panel-header">
+                        <div>
+                            <p class="section-kicker">Output</p>
+                            <h2>Generated QA suites</h2>
+                        </div>
+                        <span class="utility-chip">Structured execution plan</span>
+                    </div>
+                    <div id="test-plan-block" class="test-plan-block empty-copy">
+                        No intelligent testcase plan has been generated yet.
+                    </div>
+                </section>
+            </section>
+        </section>
+    </main>
+
+    <script src="{{ request.url_for('static', path='app.js') }}" defer></script>
+</body>
+</html>

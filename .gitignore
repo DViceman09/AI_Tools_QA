@@ -1,0 +1,12 @@
+.venv/
+.tmp/
+.tmp_seed/
+.tmp_testplan/
+.deps/
+__pycache__/
+*.pyc
+data/*.db
+generated_tests/
+artifacts/
+tmpseedprobe/
+write_probe*.txt
